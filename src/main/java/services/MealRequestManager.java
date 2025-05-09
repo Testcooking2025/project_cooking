@@ -4,6 +4,7 @@ import models.CustomMealRequest;
 import models.Ingredient;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service that manages custom meal creation requests.
@@ -13,6 +14,7 @@ public class MealRequestManager {
 
     private final Set<Ingredient> availableIngredients = new HashSet<>();
     private final Map<Ingredient, Set<Ingredient>> incompatibilityMap = new HashMap<>();
+    private final List<CustomMealRequest> requests = new ArrayList<>();
 
     /**
      * Sets the list of currently available ingredients in the system.
@@ -73,6 +75,37 @@ public class MealRequestManager {
         }
 
         return new ValidationResult(errors.isEmpty(), errors);
+    }
+
+    /**
+     * Handles and validates a new custom meal request, then stores it if valid.
+     *
+     * @param customer Name of the customer.
+     * @param mealName Name of the meal.
+     * @param ingredients Array of ingredient names.
+     * @return true if request accepted, false otherwise.
+     */
+    public boolean requestCustomMeal(String customer, String mealName, String[] ingredients) {
+        List<Ingredient> ingredientObjects = Arrays.stream(ingredients)
+                .map(String::trim)
+                .map(Ingredient::new)
+                .collect(Collectors.toList());
+
+        CustomMealRequest request = new CustomMealRequest(customer, mealName, ingredientObjects);
+        ValidationResult result = validateCustomMeal(request);
+
+        if (result.isAccepted()) {
+            requests.add(request);
+            return true;
+        } else {
+            System.out.println("❌ Meal rejected:");
+            result.getMessages().forEach(System.out::println);
+            return false;
+        }
+    }
+
+    public List<CustomMealRequest> getAllRequests() {
+        return requests;
     }
 
     /**

@@ -2,82 +2,46 @@ package services;
 
 import models.Invoice;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
-/**
- * Service for managing invoices, including creation, payment tracking,
- * and retrieving unpaid invoice data.
- */
 public class InvoiceManager {
-
-    private final List<Invoice> invoiceList = new ArrayList<>();
+    private final List<Invoice> invoices = new ArrayList<>();
 
     /**
-     * Creates a new invoice for the specified customer with the given amount.
+     * Creates a new invoice for the specified customer and amount.
      *
      * @param customer The name of the customer.
-     * @param amount   The invoice amount.
+     * @param amount   The amount for the invoice.
      */
     public void createInvoice(String customer, double amount) {
-        invoiceList.add(new Invoice(customer, amount));
+        invoices.add(new Invoice(customer, amount));
     }
 
     /**
-     * Marks the invoice for the specified customer as paid, if it's currently unpaid.
+     * Returns all invoices in the system.
      *
-     * @param customer The name of the customer paying the invoice.
-     */
-    public void payInvoice(String customer) {
-        for (Invoice i : invoiceList) {
-            if (i.getCustomer().equals(customer) && i.isUnpaid()) {
-                i.markAsPaid();
-            }
-        }
-    }
-
-    /**
-     * Retrieves the invoice associated with the given customer, if it exists.
-     *
-     * @param customer The name of the customer.
-     * @return An {@link Optional} containing the customer's invoice if found.
-     */
-    public Optional<Invoice> getInvoiceForCustomer(String customer) {
-        return invoiceList.stream()
-                .filter(i -> i.getCustomer().equals(customer))
-                .findFirst();
-    }
-
-    /**
-     * Loads a list of invoices into the system, replacing any existing ones.
-     *
-     * @param invoices A list of {@link Invoice} objects to be loaded.
-     */
-    public void loadInvoices(List<Invoice> invoices) {
-        invoiceList.clear();
-        invoiceList.addAll(invoices);
-    }
-
-    /**
-     * Returns a list of customers who have unpaid invoices.
-     *
-     * @return A list of customer names with unpaid invoices.
-     */
-    public List<String> listUnpaidCustomers() {
-        return invoiceList.stream()
-                .filter(Invoice::isUnpaid)
-                .map(Invoice::getCustomer)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns the complete list of all invoices.
-     *
-     * @return A list of all {@link Invoice} objects.
+     * @return A list of all invoices.
      */
     public List<Invoice> getAllInvoices() {
-        return invoiceList;
+        return invoices;
+    }
+
+    /**
+     * Computes a financial summary including total invoices, paid/unpaid counts, and total amount.
+     *
+     * @return A map containing summary data.
+     */
+    public Map<String, Object> getFinancialSummary() {
+        int total = invoices.size();
+        long paid = invoices.stream().filter(inv -> inv.getStatus().equalsIgnoreCase("Paid")).count();
+        long unpaid = total - paid;
+        double totalAmount = invoices.stream().mapToDouble(Invoice::getAmount).sum();
+
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("Total Invoices", total);
+        summary.put("Paid Invoices", paid);
+        summary.put("Unpaid Invoices", unpaid);
+        summary.put("Total Amount", totalAmount);
+        return summary;
     }
 }

@@ -97,10 +97,12 @@ public class CustomerProfileManager {
         if (profile == null) return Collections.emptyMap();
 
         Map<String, String> result = new HashMap<>();
-        if (!profile.getDietaryPreferences().isEmpty())
-            result.put("diet", profile.getDietaryPreferences().getFirst());
-        if (!profile.getAllergies().isEmpty())
-            result.put("allergy", profile.getAllergies().getFirst());
+        if (!profile.getDietaryPreferences().isEmpty()) {
+            result.put("diet", profile.getDietaryPreferences().get(0));
+        }
+        if (!profile.getAllergies().isEmpty()) {
+            result.put("allergy", profile.getAllergies().get(0));
+        }
 
         return result;
     }

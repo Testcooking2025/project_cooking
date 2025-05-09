@@ -2,28 +2,25 @@ package models;
 
 import java.util.List;
 
-/**
- * Represents a custom meal request made by a customer.
- * The request includes a list of selected ingredients.
- */
 public class CustomMealRequest {
-
+    private final String customer;
+    private final String mealName;
     private final List<Ingredient> selectedIngredients;
 
-    /**
-     * Constructs a custom meal request with the provided list of ingredients.
-     *
-     * @param selectedIngredients A list of ingredients chosen by the customer.
-     */
-    public CustomMealRequest(List<Ingredient> selectedIngredients) {
+    public CustomMealRequest(String customer, String mealName, List<Ingredient> selectedIngredients) {
+        this.customer = customer;
+        this.mealName = mealName;
         this.selectedIngredients = selectedIngredients;
     }
 
-    /**
-     * Returns the list of ingredients selected in this custom meal request.
-     *
-     * @return The list of selected ingredients.
-     */
+    public String getCustomer() {
+        return customer;
+    }
+
+    public String getMealName() {
+        return mealName;
+    }
+
     public List<Ingredient> getSelectedIngredients() {
         return selectedIngredients;
     }

@@ -18,9 +18,6 @@ public class NotificationService {
     private String fromEmail;
     private String password;
 
-    /**
-     * Allows manual input of sender email and password via console.
-     */
     public void promptForCredentials() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter sender email: ");
@@ -29,28 +26,15 @@ public class NotificationService {
         password = scanner.nextLine();
     }
 
-    /**
-     * Sets the sender credentials (useful for testing or GUI use).
-     */
     public void setCredentials(String email, String password) {
         this.fromEmail = email;
         this.password = password;
     }
 
-    /**
-     * Returns true if credentials are already configured.
-     */
     public boolean isConfigured() {
         return fromEmail != null && password != null;
     }
 
-    /**
-     * Sends an email using SMTP.
-     *
-     * @param toEmail Receiver address
-     * @param subject Email subject
-     * @param body    Email body
-     */
     public void sendEmail(String toEmail, String subject, String body) {
         if (!isConfigured()) {
             promptForCredentials();
@@ -77,7 +61,9 @@ public class NotificationService {
             Transport.send(message);
             logger.info("Email sent to {}", toEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send email to {}: {}", toEmail, e.getMessage(), e);
+
+            System.err.println("Failed to send email to " + toEmail + ": " + e.getMessage());
+
         }
     }
 }

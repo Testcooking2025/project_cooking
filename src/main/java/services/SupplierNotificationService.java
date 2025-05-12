@@ -5,71 +5,65 @@ import models.RestockRequest;
 import java.util.*;
 
 /**
- * Service for managing restocking logic and supplier notifications.
- * It supports both automatic and manual restock requests based on inventory levels.
+ * Service responsible for checking inventory levels and notifying suppliers.
  */
 public class SupplierNotificationService {
 
-    private final List<RestockRequest> restockRequests = new ArrayList<>();
+    private static class Ingredient {
+        String name;
+        int quantity;
+        int threshold;
 
-    /**
-     * Scans the inventory data and creates automatic restock requests
-     * for any item whose quantity is below the defined threshold.
-     *
-     * @param inventoryData A list of ingredient entries with "Ingredient", "Quantity", and "Threshold".
-     */
-    public void checkInventoryLevelsWithThreshold(List<Map<String, String>> inventoryData) {
-        restockRequests.clear();
-        for (Map<String, String> row : inventoryData) {
-            String name = row.get("Ingredient");
-            int quantity = Integer.parseInt(row.get("Quantity"));
-            int threshold = Integer.parseInt(row.get("Threshold"));
+        Ingredient(String name, int quantity, int threshold) {
+            this.name = name;
+            this.quantity = quantity;
+            this.threshold = threshold;
+        }
+    }
 
-            if (quantity < threshold) {
-                restockRequests.add(new RestockRequest(name, false));
+    private final List<Ingredient> inventory = new ArrayList<>();
+    private final List<String> lowStockNotifications = new ArrayList<>();
+    private final List<RestockRequest> manualRequests = new ArrayList<>();
+
+    public void addIngredient(String name, int quantity, int threshold) {
+        inventory.add(new Ingredient(name, quantity, threshold));
+    }
+
+    public void checkStockLevels() {
+        lowStockNotifications.clear();
+        for (Ingredient item : inventory) {
+            if (item.quantity < item.threshold) {
+                lowStockNotifications.add(item.name);
             }
         }
     }
 
-    /**
-     * Adds a manual restock request for the given ingredient.
-     *
-     * @param ingredientName The name of the ingredient to restock manually.
-     */
-    public void requestManualRestock(String ingredientName) {
-        restockRequests.add(new RestockRequest(ingredientName, true));
+    public List<String> getLowStockNotifications() {
+        return new ArrayList<>(lowStockNotifications);
     }
 
     /**
-     * Retrieves a list of ingredients that triggered automatic restock requests.
-     *
-     * @return A list of ingredient names that need automatic restocking.
+     * Records a manual restock request using a RestockRequest object.
      */
-    public List<String> getAutoRestockIngredients() {
-        List<String> result = new ArrayList<>();
-        for (RestockRequest request : restockRequests) {
-            if (!request.isManual()) {
-                result.add(request.getIngredientName());
-            }
+    public void requestManualRestock(String ingredient) {
+        manualRequests.add(new RestockRequest(ingredient));
+    }
+
+    /**
+     * Returns a list of RestockRequest objects.
+     */
+    public List<RestockRequest> getManualRequests() {
+        return new ArrayList<>(manualRequests);
+    }
+
+    /**
+     * Returns just the ingredient names from the restock requests.
+     */
+    public List<String> getManualRequestIngredients() {
+        List<String> names = new ArrayList<>();
+        for (RestockRequest request : manualRequests) {
+            names.add(request.getIngredient());
         }
-        return result;
-    }
-
-    /**
-     * Checks if a manual restock request has been sent for a specific ingredient.
-     *
-     * @param ingredient The ingredient name to check.
-     * @return True if a manual request was sent, false otherwise.
-     */
-    public boolean wasManualRequestSent(String ingredient) {
-        return restockRequests.stream()
-                .anyMatch(r -> r.isManual() && r.getIngredientName().equalsIgnoreCase(ingredient));
-    }
-
-    /**
-     * Clears all stored restock requests (both manual and automatic).
-     */
-    public void clearRequests() {
-        restockRequests.clear();
+        return names;
     }
 }

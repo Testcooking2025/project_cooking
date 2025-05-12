@@ -1,65 +1,52 @@
 package Test;
 
 import io.cucumber.java.en.*;
+import services.InvoiceManager;
+import services.InvoiceAlertService;
+
 import static org.junit.jupiter.api.Assertions.*;
+import io.cucumber.datatable.DataTable;
 
 import java.util.*;
 
 public class UnpaidInvoiceAlerts {
 
-    static class Invoice {
-        String customer;
-        double amount;
-        String status;
-
-        Invoice(String customer, double amount, String status) {
-            this.customer = customer;
-            this.amount = amount;
-            this.status = status;
-        }
-    }
-
-    private final List<Invoice> invoices = new ArrayList<>();
-    private int alertThreshold = 0;
-    private String adminAlertMessage = null;
+    private final InvoiceManager invoiceManager = new InvoiceManager();
+    private final InvoiceAlertService alertService = new InvoiceAlertService(invoiceManager);
+    private String alertMessage;
 
     @Given("the current invoice list is:")
-    public void theCurrentInvoiceListIs(io.cucumber.datatable.DataTable table) {
-        invoices.clear();
+    public void theCurrentInvoiceListIs(DataTable table) {
+        invoiceManager.clearInvoices();
         for (Map<String, String> row : table.asMaps()) {
-            invoices.add(new Invoice(
-                    row.get("Customer"),
-                    Double.parseDouble(row.get("Amount")),
-                    row.get("Status")
-            ));
+            String customer = row.get("Customer");
+            double amount = Double.parseDouble(row.get("Amount"));
+            String status = row.get("Status");
+
+            invoiceManager.generateInvoice(customer, amount);
+            if (!"Unpaid".equalsIgnoreCase(status)) {
+                invoiceManager.updateInvoiceStatus(customer, status);
+            }
         }
     }
 
     @And("the system alert threshold is {int}")
     public void theSystemAlertThresholdIs(int threshold) {
-        this.alertThreshold = threshold;
+        alertService.setAlertThreshold(threshold);
     }
 
     @When("the system checks unpaid invoices")
     public void theSystemChecksUnpaidInvoices() {
-        long count = invoices.stream()
-                .filter(i -> i.status.equalsIgnoreCase("Unpaid"))
-                .count();
-
-        if (count > alertThreshold) {
-            adminAlertMessage = count + " unpaid invoices found. Alerting admin!";
-        } else {
-            adminAlertMessage = null;
-        }
+        alertMessage = alertService.checkForUnpaidInvoiceAlerts();
     }
 
     @Then("the admin should be alerted: {string}")
     public void theAdminShouldBeAlerted(String expectedMessage) {
-        assertEquals(expectedMessage, adminAlertMessage);
+        assertEquals(expectedMessage, alertMessage);
     }
 
     @Then("no admin alert should be sent")
     public void noAdminAlertShouldBeSent() {
-        assertNull(adminAlertMessage, "Admin was alerted when it shouldn't have been.");
+        assertNull(alertMessage, "Unexpected admin alert: " + alertMessage);
     }
 }

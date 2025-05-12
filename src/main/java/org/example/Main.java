@@ -36,7 +36,7 @@ public class Main {
                     console.showMessage("Exiting system. Goodbye!");
                     return;
                 }
-                default -> console.showError("Invalid option. Try again.");
+                default -> showError("Invalid option. Try again.");
             }
         }
     }
@@ -55,7 +55,7 @@ public class Main {
 
         boolean success = userService.signUp(username, email, password, role);
         if (success) console.showMessage("✔ Successfully registered!");
-        else console.showError("✖ Email already registered.");
+        else showError("✖ Email already registered.");
     }
 
     private static boolean handleLogin() {
@@ -68,7 +68,7 @@ public class Main {
 
         boolean success = userService.signIn(email, password);
         if (success) console.showMessage("✔ Logged in successfully!\n");
-        else console.showError("✖ Invalid credentials.\n");
+        else showError("✖ Invalid credentials.\n");
         return success;
     }
 
@@ -80,7 +80,7 @@ public class Main {
             console.showMessage("=== Main Menu (" + user.getRole().toUpperCase() + ") ===");
             switch (user.getRole().toLowerCase()) {
                 case "user" -> {
-                    console.showMessage("1) View filtered meals\n2) View invoices\n3) Generate new invoice\n4) Get recipe recommendations\n0) Logout");
+                    console.showMessage("1) View filtered meals\n2) View invoices\n3) Generate new invoice\n0) Logout");
                     System.out.print("Choice: ");
                     String input = scanner.nextLine();
                     switch (input) {
@@ -93,9 +93,8 @@ public class Main {
                             controller.getInvoiceManager().createInvoice(user.getUsername(), amount);
                             console.showMessage("✔ Invoice generated successfully.");
                         }
-                        case "4" -> console.showList("Recommended Recipes", controller.getAiRecipeRecommendation().recommendRecipes(user.getUsername()));
                         case "0" -> { userService.signOut(); return; }
-                        default -> console.showError("Invalid choice.");
+                        default -> showError("Invalid choice.");
                     }
                 }
                 case "chef" -> {
@@ -107,7 +106,7 @@ public class Main {
                                 console.showMessage("Task: " + task.getName() + " | Assigned to: " + task.getAssignedStaff() + " | Status: " + task.getStatus()));
                         case "2" -> console.showMap("Inventory Snapshot", controller.getInventoryManager().getInventorySnapshot());
                         case "0" -> { userService.signOut(); return; }
-                        default -> console.showError("Invalid choice.");
+                        default -> showError("Invalid choice.");
                     }
                 }
                 case "admin" -> {
@@ -117,7 +116,7 @@ public class Main {
                     switch (input) {
                         case "1" -> console.showMap("Order Statistics", controller.getOrderHistoryManager().getOrderStatistics());
                         case "2" -> {
-                            boolean sent = controller.getSupplierNotificationService().wasManualRequestSent("Onion");
+                            boolean sent = controller.getSupplierNotificationService().getManualRequestIngredients().contains("Onion");
                             console.showMessage("Manual request for Onion sent? " + (sent ? "Yes" : "No"));
                         }
                         case "3" -> emailService.sendEmail(
@@ -127,24 +126,27 @@ public class Main {
                         case "4" -> controller.getInvoiceManager().getAllInvoices().forEach(inv ->
                                 console.showInvoice(inv.getCustomer(), inv.getAmount(), inv.getStatus()));
                         case "5" -> {
-                            // Display financial summary
-                            Map<String, Object> financialSummary = controller.getInvoiceManager().getFinancialSummary();
+                            Map<String, Object> summary = controller.getInvoiceManager().getFinancialSummary();
                             console.showMessage("=== Financial Summary ===");
-                            console.showMessage("Total Invoices: " + financialSummary.get("totalInvoices"));
-                            console.showMessage("Paid Invoices: " + financialSummary.get("paidInvoices"));
-                            console.showMessage("Unpaid Invoices: " + financialSummary.get("unpaidInvoices"));
-                            console.showMessage("Total Amount: $" + financialSummary.get("totalAmount"));
+                            console.showMessage("Total Invoices: " + summary.get("totalInvoices"));
+                            console.showMessage("Paid Invoices: " + summary.get("paidInvoices"));
+                            console.showMessage("Unpaid Invoices: " + summary.get("unpaidInvoices"));
+                            console.showMessage("Total Amount: $" + summary.get("totalAmount"));
                         }
                         case "0" -> { userService.signOut(); return; }
-                        default -> console.showError("Invalid choice.");
+                        default -> showError("Invalid choice.");
                     }
                 }
                 default -> {
-                    console.showError("Unknown role: " + user.getRole());
+                    showError("Unknown role: " + user.getRole());
                     return;
                 }
             }
             console.separator();
         }
+    }
+
+    private static void showError(String msg) {
+        System.out.println("❌ ERROR: " + msg);
     }
 }

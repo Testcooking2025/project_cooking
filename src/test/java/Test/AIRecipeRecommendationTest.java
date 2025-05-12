@@ -8,7 +8,7 @@ import io.cucumber.datatable.DataTable;
 
 import java.util.*;
 
-public class AIRecipeRecommendation {
+public class AIRecipeRecommendationTest {
 
     private final AIRecipeRecommendation recommender = new AIRecipeRecommendation();
     private String selectedRecipe;

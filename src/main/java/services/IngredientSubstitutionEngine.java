@@ -1,100 +1,92 @@
 package services;
 
-import models.SubstitutionRecord;
 import models.SubstitutionRule;
+import models.SubstitutionRecord;
 
 import java.util.*;
 
 /**
- * Engine responsible for managing ingredient substitutions based on availability
- * and dietary restrictions.
+ * Suggests ingredient substitutions based on dietary restrictions and availability.
  */
 public class IngredientSubstitutionEngine {
 
     private final Set<String> availableIngredients = new HashSet<>();
-    private final Map<String, String> substitutionMap = new HashMap<>();
+    private final List<SubstitutionRule> substitutionRules = new ArrayList<>();
     private final List<SubstitutionRecord> appliedSubstitutions = new ArrayList<>();
     private String dietaryRestriction;
+    private String lastSystemMessage;
 
-    /**
-     * Sets the list of currently available ingredients.
-     *
-     * @param ingredients List of available ingredient names.
-     */
-    public void setAvailableIngredients(List<String> ingredients) {
+    public void setAvailableIngredients(Set<String> ingredients) {
         availableIngredients.clear();
-        ingredients.forEach(i -> availableIngredients.add(i.trim()));
+        availableIngredients.addAll(ingredients);
     }
 
-    /**
-     * Sets the substitution rules (original → substitute).
-     *
-     * @param rules List of substitution rules.
-     */
-    public void setSubstitutionRules(List<SubstitutionRule> rules) {
-        substitutionMap.clear();
-        for (SubstitutionRule rule : rules) {
-            substitutionMap.put(rule.getOriginal(), rule.getSubstitute());
-        }
+    public void addSubstitutionRule(String original, String substitute) {
+        substitutionRules.add(new SubstitutionRule(original, substitute));
     }
 
-    /**
-     * Sets the dietary restriction to evaluate ingredients against (e.g., "Vegan").
-     *
-     * @param restriction The dietary restriction keyword.
-     */
     public void setDietaryRestriction(String restriction) {
-        this.dietaryRestriction = restriction;
+        this.dietaryRestriction = restriction.toLowerCase();
     }
 
-    /**
-     * Checks if a selected ingredient violates dietary rules or is unavailable,
-     * and suggests a substitution if a rule exists.
-     *
-     * @param selectedIngredient The ingredient selected by the customer.
-     * @return A substitution record if substitution is applied; null otherwise.
-     */
-    public SubstitutionRecord checkIngredient(String selectedIngredient) {
+    public String suggestSubstitution(String ingredient) {
         appliedSubstitutions.clear();
+        String normalized = ingredient.toLowerCase();
 
-        boolean violates = violatesRestriction(selectedIngredient);
-        boolean unavailable = !availableIngredients.contains(selectedIngredient);
-        boolean hasSubstitute = substitutionMap.containsKey(selectedIngredient);
-
-        if ((violates || unavailable) && hasSubstitute) {
-            String substitute = substitutionMap.get(selectedIngredient);
-            String reason = violates
-                    ? String.format("%s does not meet %s restrictions. Suggesting %s", selectedIngredient, dietaryRestriction, substitute)
-                    : String.format("%s is unavailable. Suggesting %s", selectedIngredient, substitute);
-
-            SubstitutionRecord record = new SubstitutionRecord(reason, selectedIngredient, substitute);
-            appliedSubstitutions.add(record);
-            return record;
+        if (violatesRestriction(normalized)) {
+            SubstitutionRule rule = findRule(normalized);
+            if (rule != null) {
+                lastSystemMessage = ingredient + " does not meet " + dietaryRestriction + " restrictions. Suggesting " + rule.getSubstitute();
+                appliedSubstitutions.add(new SubstitutionRecord(rule.getOriginal(), rule.getSubstitute()));
+                return rule.getSubstitute();
+            }
         }
 
-        return null; // no substitution applied
+        if (!availableIngredients.contains(normalized)) {
+            SubstitutionRule rule = findRule(normalized);
+            if (rule != null) {
+                lastSystemMessage = ingredient + " is unavailable. Suggesting " + rule.getSubstitute();
+                appliedSubstitutions.add(new SubstitutionRecord(rule.getOriginal(), rule.getSubstitute()));
+                return rule.getSubstitute();
+            }
+        }
+
+        lastSystemMessage = ingredient + " is acceptable.";
+        return null;
     }
 
-    /**
-     * Returns a list of all substitutions that were applied during the last check.
-     *
-     * @return List of applied substitution records.
-     */
+    private SubstitutionRule findRule(String ingredient) {
+        for (SubstitutionRule rule : substitutionRules) {
+            if (rule.getOriginal().equalsIgnoreCase(ingredient)) {
+                return rule;
+            }
+        }
+        return null;
+    }
+
+    public String getLastSystemMessage() {
+        return lastSystemMessage;
+    }
+
     public List<SubstitutionRecord> getAppliedSubstitutions() {
-        return appliedSubstitutions;
+        return new ArrayList<>(appliedSubstitutions);
     }
 
-    /**
-     * Checks if an ingredient violates the active dietary restriction.
-     *
-     * @param ingredient The name of the ingredient.
-     * @return True if it violates the restriction, false otherwise.
-     */
     private boolean violatesRestriction(String ingredient) {
         if (dietaryRestriction == null) return false;
+        return dietaryRestriction.equalsIgnoreCase("vegan") &&
+                (ingredient.contains("chicken") || ingredient.contains("meat") ||
+                        ingredient.contains("cheese") || ingredient.contains("fish"));
+    }
 
-        String ing = ingredient.toLowerCase();
-        return dietaryRestriction.equalsIgnoreCase("Vegan") &&
-                (ing.contains("chicken") || ing.contains("cheese") || ing.contains("meat"));
+    /**
+     * Returns a formatted chef alert when a substitution occurs.
+     *
+     * @param original   The original ingredient replaced.
+     * @param substitute The substitute used.
+     * @return A human-readable substitution message.
+     */
+    public String generateChefAlert(String original, String substitute) {
+        return "Substitution applied: " + original + " → " + substitute;
     }
 }

@@ -5,46 +5,75 @@ import models.LowStockAlert;
 import java.util.*;
 
 /**
- * Service responsible for scanning inventory levels and generating alerts
- * for ingredients that fall below their minimum thresholds.
+ * Service for monitoring inventory levels and generating low stock alerts.
  */
 public class InventoryAlertService {
 
-    /**
-     * Scans the inventory and returns a list of alerts for ingredients
-     * that have quantities below their defined minimums.
-     *
-     * @param inventoryData A list of maps where each map represents an ingredient
-     *                      with keys: "Ingredient", "Quantity", "Minimum".
-     * @return A list of {@link LowStockAlert} objects for low inventory items.
-     */
-    public List<LowStockAlert> scanForLowInventory(List<Map<String, String>> inventoryData) {
-        List<LowStockAlert> alerts = new ArrayList<>();
+    // Internal representation of inventory items
+    private static class InventoryItem {
+        String name;
+        int quantity;
+        int minimum;
 
-        for (Map<String, String> row : inventoryData) {
-            String name = row.get("Ingredient");
-            int quantity = Integer.parseInt(row.get("Quantity"));
-            int minimum = Integer.parseInt(row.get("Minimum"));
-
-            if (quantity < minimum) {
-                alerts.add(new LowStockAlert(name));
-            }
+        InventoryItem(String name, int quantity, int minimum) {
+            this.name = name;
+            this.quantity = quantity;
+            this.minimum = minimum;
         }
+    }
 
-        return alerts;
+    private final List<InventoryItem> inventory = new ArrayList<>();
+    private final List<LowStockAlert> lowInventoryAlerts = new ArrayList<>();
+
+    /**
+     * Adds an item to the inventory with its quantity and minimum threshold.
+     * Used internally or in production logic.
+     */
+    public void addInventoryItem(String name, int quantity, int minimum) {
+        inventory.add(new InventoryItem(name, quantity, minimum));
     }
 
     /**
-     * Extracts the ingredient names from a list of alerts.
-     *
-     * @param alerts A list of {@link LowStockAlert} objects.
-     * @return A list of ingredient names that triggered alerts.
+     * Alias for test compatibility with step definition wording.
      */
-    public List<String> extractAlertNames(List<LowStockAlert> alerts) {
-        List<String> names = new ArrayList<>();
-        for (LowStockAlert alert : alerts) {
-            names.add(alert.getIngredientName());
+    public void addIngredient(String name, int quantity, int minimum) {
+        addInventoryItem(name, quantity, minimum);
+    }
+
+    /**
+     * Scans all items and generates alerts for items below their minimum.
+     */
+    public void scanInventory() {
+        lowInventoryAlerts.clear();
+        for (InventoryItem item : inventory) {
+            if (item.quantity < item.minimum) {
+                lowInventoryAlerts.add(new LowStockAlert(item.name, item.quantity, item.minimum));
+            }
         }
-        return names;
+    }
+
+    /**
+     * Alias for test compatibility with step definition wording.
+     */
+    public void scanForLowInventory() {
+        scanInventory();
+    }
+
+    /**
+     * Returns human-readable low-stock alert messages.
+     */
+    public List<String> getLowInventoryMessages() {
+        List<String> messages = new ArrayList<>();
+        for (LowStockAlert alert : lowInventoryAlerts) {
+            messages.add(alert.toString());
+        }
+        return messages;
+    }
+
+    /**
+     * Returns structured alert objects for test validation.
+     */
+    public List<LowStockAlert> getLowInventoryAlerts() {
+        return new ArrayList<>(lowInventoryAlerts);
     }
 }

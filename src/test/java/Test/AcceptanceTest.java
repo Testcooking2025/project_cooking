@@ -1,13 +1,16 @@
 package Test;
-import io.cucumber.junit.Cucumber;
-import io.cucumber.junit.CucumberOptions;
-import io.cucumber.junit.CucumberOptions.SnippetType;
-import org.junit.runner.RunWith;
 
-@RunWith(Cucumber.class)
-@CucumberOptions(features = "src/test/resources/features",monochrome = true,snippets = SnippetType.CAMELCASE,
-        glue = {"Test"})
+import org.junit.platform.suite.api.ConfigurationParameter;
+import org.junit.platform.suite.api.IncludeEngines;
+import org.junit.platform.suite.api.SelectClasspathResource;
+import org.junit.platform.suite.api.Suite;
 
-
+@Suite
+@IncludeEngines("cucumber")
+@SelectClasspathResource("features")
+@ConfigurationParameter(key = "cucumber.glue", value = "Test")
+@ConfigurationParameter(key = "cucumber.plugin", value = "pretty, summary, html:target/cucumber-reports.html, json:target/cucumber.json, junit:target/cucumber.xml")
+@ConfigurationParameter(key = "cucumber.snippet-type", value = "camelcase")
+@ConfigurationParameter(key = "cucumber.monochrome", value = "true")
 public class AcceptanceTest {
 }

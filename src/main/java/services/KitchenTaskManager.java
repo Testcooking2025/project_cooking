@@ -2,102 +2,86 @@ package services;
 
 import models.KitchenTask;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.*;
 
 /**
- * Service for managing kitchen tasks including assignment, status updates,
- * and task retrieval.
+ * Manages kitchen tasks and their statuses.
  */
 public class KitchenTaskManager {
 
-    private final List<KitchenTask> taskList = new ArrayList<>();
-    private static final Logger logger = Logger.getLogger(KitchenTaskManager.class.getName());
+    private final List<KitchenTask> tasks = new ArrayList<>();
 
     /**
-     * Creates a new kitchen task and assigns it to the specified staff member.
+     * Creates a new kitchen task and assigns it to a staff member.
      *
-     * @param taskName  The name of the task (e.g., "Prepare Salad").
-     * @param staffName The staff member assigned to the task.
+     * @param name  Name of the task.
+     * @param staff Name of the assigned staff member.
      */
-    public void createTask(String taskName, String staffName) {
-        taskList.add(new KitchenTask(taskName, staffName));
+    public void createTask(String name, String staff) {
+        tasks.add(new KitchenTask(name, staff));
     }
 
     /**
-     * Marks the first pending task assigned to the given staff member as "In Progress".
+     * Returns a list of all kitchen tasks.
      *
-     * @param staffName The name of the staff member starting the task.
-     */
-    public void startTask(String staffName) {
-        for (KitchenTask task : taskList) {
-            if (task.getAssignedStaff().equals(staffName) && task.getStatus().equals("Pending")) {
-                task.startTask();
-            }
-        }
-    }
-
-    /**
-     * Marks the first in-progress task assigned to the given staff member as "Completed".
-     *
-     * @param staffName The name of the staff member completing the task.
-     */
-    public void completeTask(String staffName) {
-        for (KitchenTask task : taskList) {
-            if (task.getAssignedStaff().equals(staffName) && task.getStatus().equals("In Progress")) {
-                task.completeTask();
-            }
-        }
-    }
-
-    /**
-     * Retrieves all kitchen tasks managed by the system.
-     *
-     * @return A list of {@link KitchenTask} objects.
+     * @return List of KitchenTask objects.
      */
     public List<KitchenTask> getAllTasks() {
-        return taskList;
+        return tasks;
     }
 
     /**
-     * Finds a kitchen task by its name.
+     * Retrieves a task by its name.
      *
-     * @param taskName The name of the task to find.
-     * @return An {@link Optional} containing the task if found.
+     * @param name Name of the task.
+     * @return KitchenTask object or null if not found.
      */
-    public Optional<KitchenTask> findTaskByName(String taskName) {
-        return taskList.stream()
-                .filter(t -> t.getName().equals(taskName))
-                .findFirst();
+    public KitchenTask getTaskByName(String name) {
+        for (KitchenTask task : tasks) {
+            if (task.getName().equals(name)) {
+                return task;
+            }
+        }
+        return null;
     }
 
     /**
-     * Loads tasks from a structured table format, optionally overriding their status.
+     * Updates the status of a specific task.
      *
-     * @param tableData A list of rows, each containing:
-     *                  - Task name
-     *                  - Assigned staff
-     *                  - Optional status ("Pending", "In Progress", "Completed")
+     * @param name   Name of the task.
+     * @param status New status to apply.
      */
-    public void loadTasksFromTable(List<List<String>> tableData) {
-        taskList.clear();
-        for (List<String> row : tableData) {
-            try {
-                KitchenTask task = new KitchenTask(row.get(0), row.get(1));
-                if (row.size() > 2) {
-                    String status = row.get(2);
-                    if (status.equals("In Progress")) task.startTask();
-                    if (status.equals("Completed")) {
-                        task.startTask();
-                        task.completeTask();
-                    }
-                }
-                taskList.add(task);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed to load task with status override", e);
+    public void updateTaskStatus(String name, String status) {
+        KitchenTask task = getTaskByName(name);
+        if (task != null) {
+            task.setStatus(status);
+        }
+    }
+
+    /**
+     * Marks the first "Pending" task for a staff member as "In Progress".
+     *
+     * @param staff Staff name.
+     */
+    public void startTaskByStaff(String staff) {
+        for (KitchenTask task : tasks) {
+            if (task.getAssignedStaff().equals(staff) && task.getStatus().equals("Pending")) {
+                task.setStatus("In Progress");
+                return;
+            }
+        }
+    }
+
+    /**
+     * Marks the first "In Progress" task for a staff member as "Completed".
+     *
+     * @param staff Staff name.
+     */
+    public void completeTaskByStaff(String staff) {
+        for (KitchenTask task : tasks) {
+            if (task.getAssignedStaff().equals(staff) && task.getStatus().equals("In Progress")) {
+                task.setStatus("Completed");
+                return;
             }
         }
     }

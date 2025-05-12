@@ -8,6 +8,9 @@ import javax.mail.internet.*;
 import java.util.Properties;
 import java.util.Scanner;
 
+/**
+ * Service for sending email notifications via SMTP (Gmail).
+ */
 public class NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
@@ -15,6 +18,9 @@ public class NotificationService {
     private String fromEmail;
     private String password;
 
+    /**
+     * Allows manual input of sender email and password via console.
+     */
     public void promptForCredentials() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter sender email: ");
@@ -23,8 +29,30 @@ public class NotificationService {
         password = scanner.nextLine();
     }
 
+    /**
+     * Sets the sender credentials (useful for testing or GUI use).
+     */
+    public void setCredentials(String email, String password) {
+        this.fromEmail = email;
+        this.password = password;
+    }
+
+    /**
+     * Returns true if credentials are already configured.
+     */
+    public boolean isConfigured() {
+        return fromEmail != null && password != null;
+    }
+
+    /**
+     * Sends an email using SMTP.
+     *
+     * @param toEmail Receiver address
+     * @param subject Email subject
+     * @param body    Email body
+     */
     public void sendEmail(String toEmail, String subject, String body) {
-        if (fromEmail == null || password == null) {
+        if (!isConfigured()) {
             promptForCredentials();
         }
 

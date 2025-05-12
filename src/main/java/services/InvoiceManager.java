@@ -4,44 +4,110 @@ import models.Invoice;
 
 import java.util.*;
 
+/**
+ * Manages the generation, update, and tracking of customer invoices.
+ */
 public class InvoiceManager {
-    private final List<Invoice> invoices = new ArrayList<>();
+
+    private final Map<String, Invoice> invoices = new HashMap<>();
 
     /**
-     * Creates a new invoice for the specified customer and amount.
+     * Creates a new invoice and stores it.
      *
      * @param customer The name of the customer.
-     * @param amount   The amount for the invoice.
+     * @param amount   The invoice amount.
      */
     public void createInvoice(String customer, double amount) {
-        invoices.add(new Invoice(customer, amount));
+        invoices.put(customer, new Invoice(customer, amount));
     }
 
     /**
-     * Returns all invoices in the system.
+     * Generates a new invoice (alias for createInvoice).
+     */
+    public void generateInvoice(String customer, double amount) {
+        createInvoice(customer, amount);
+    }
+
+    /**
+     * Retrieves the invoice by customer name.
      *
-     * @return A list of all invoices.
+     * @param customer The customer's name.
+     * @return Invoice or null.
+     */
+    public Invoice getInvoiceByCustomer(String customer) {
+        return invoices.get(customer);
+    }
+
+    /**
+     * Updates the status of an invoice.
+     */
+    public void updateInvoiceStatus(String customer, String status) {
+        Invoice invoice = invoices.get(customer);
+        if (invoice != null) {
+            invoice.setStatus(status);
+        }
+    }
+
+    /**
+     * Marks an invoice as paid.
+     */
+    public void markAsPaid(String customer) {
+        updateInvoiceStatus(customer, "Paid");
+    }
+
+    /**
+     * Returns all invoices.
      */
     public List<Invoice> getAllInvoices() {
-        return invoices;
+        return new ArrayList<>(invoices.values());
     }
 
     /**
-     * Computes a financial summary including total invoices, paid/unpaid counts, and total amount.
+     * Returns the list of customer names with unpaid invoices.
+     */
+    public List<String> getUnpaidCustomerNames() {
+        List<String> result = new ArrayList<>();
+        for (Invoice invoice : invoices.values()) {
+            if ("Unpaid".equalsIgnoreCase(invoice.getStatus())) {
+                result.add(invoice.getCustomer());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Clears all invoices (for testing).
+     */
+    public void clearInvoices() {
+        invoices.clear();
+    }
+
+    /**
+     * Provides a financial summary including totals and statuses.
      *
-     * @return A map containing summary data.
+     * @return A map with keys: totalInvoices, paidInvoices, unpaidInvoices, totalAmount.
      */
     public Map<String, Object> getFinancialSummary() {
-        int total = invoices.size();
-        long paid = invoices.stream().filter(inv -> inv.getStatus().equalsIgnoreCase("Paid")).count();
-        long unpaid = total - paid;
-        double totalAmount = invoices.stream().mapToDouble(Invoice::getAmount).sum();
+        Map<String, Object> summary = new HashMap<>();
+        int totalInvoices = invoices.size();
+        int paidInvoices = 0;
+        int unpaidInvoices = 0;
+        double totalAmount = 0.0;
 
-        Map<String, Object> summary = new LinkedHashMap<>();
-        summary.put("Total Invoices", total);
-        summary.put("Paid Invoices", paid);
-        summary.put("Unpaid Invoices", unpaid);
-        summary.put("Total Amount", totalAmount);
+        for (Invoice invoice : invoices.values()) {
+            totalAmount += invoice.getAmount();
+            if ("Paid".equalsIgnoreCase(invoice.getStatus())) {
+                paidInvoices++;
+            } else {
+                unpaidInvoices++;
+            }
+        }
+
+        summary.put("totalInvoices", totalInvoices);
+        summary.put("paidInvoices", paidInvoices);
+        summary.put("unpaidInvoices", unpaidInvoices);
+        summary.put("totalAmount", totalAmount);
+
         return summary;
     }
 }

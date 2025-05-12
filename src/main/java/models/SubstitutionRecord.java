@@ -1,61 +1,36 @@
 package models;
 
+import java.time.LocalDateTime;
+
 /**
- * Represents a substitution that was applied to an ingredient,
- * including the reason and the original and substitute ingredients.
+ * Represents a record of an ingredient substitution applied to a request.
  */
 public class SubstitutionRecord {
 
-    private final String reason;
-    private final String original;
-    private final String substitute;
+    private final String ingredientReplaced;
+    private final String ingredientUsed;
+    private final LocalDateTime timestamp;
 
-    /**
-     * Constructs a substitution record with a reason and the involved ingredients.
-     *
-     * @param reason     The reason for the substitution (e.g., "Unavailable", "Violates restriction").
-     * @param original   The original ingredient that was replaced.
-     * @param substitute The ingredient used as a replacement.
-     */
-    public SubstitutionRecord(String reason, String original, String substitute) {
-        this.reason = reason;
-        this.original = original;
-        this.substitute = substitute;
+    public SubstitutionRecord(String ingredientReplaced, String ingredientUsed) {
+        this.ingredientReplaced = ingredientReplaced;
+        this.ingredientUsed = ingredientUsed;
+        this.timestamp = LocalDateTime.now();
     }
 
-    /**
-     * Returns the reason why the substitution was made.
-     *
-     * @return The substitution reason.
-     */
-    public String getReason() {
-        return reason;
+    public String getIngredientReplaced() {
+        return ingredientReplaced;
     }
 
-    /**
-     * Returns the original ingredient that was substituted.
-     *
-     * @return The original ingredient.
-     */
-    public String getOriginal() {
-        return original;
+    public String getIngredientUsed() {
+        return ingredientUsed;
     }
 
-    /**
-     * Returns the substitute ingredient used.
-     *
-     * @return The substitute ingredient.
-     */
-    public String getSubstitute() {
-        return substitute;
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 
-    /**
-     * Returns a formatted alert message describing the substitution.
-     *
-     * @return A string like: "Substitution applied: Cheese → Vegan Cheese".
-     */
-    public String getAlertMessage() {
-        return String.format("Substitution applied: %s → %s", original, substitute);
+    @Override
+    public String toString() {
+        return "Substitution: " + ingredientReplaced + " → " + ingredientUsed + " at " + timestamp;
     }
 }

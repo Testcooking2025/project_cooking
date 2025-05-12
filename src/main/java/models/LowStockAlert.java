@@ -1,37 +1,36 @@
 package models;
 
 /**
- * Represents an alert triggered when an ingredient's stock falls below a defined threshold.
+ * Represents a low stock alert for a specific ingredient.
  */
 public class LowStockAlert {
 
     private final String ingredientName;
+    private final int currentQuantity;
+    private final int minimumRequired;
 
-    /**
-     * Constructs a low stock alert for the specified ingredient.
-     *
-     * @param ingredientName The name of the ingredient that is low in stock.
-     */
-    public LowStockAlert(String ingredientName) {
+    public LowStockAlert(String ingredientName, int currentQuantity, int minimumRequired) {
         this.ingredientName = ingredientName;
+        this.currentQuantity = currentQuantity;
+        this.minimumRequired = minimumRequired;
     }
 
-    /**
-     * Returns the name of the ingredient associated with this alert.
-     *
-     * @return The ingredient name.
-     */
     public String getIngredientName() {
         return ingredientName;
     }
 
-    /**
-     * Returns a readable description of the alert.
-     *
-     * @return String representing the alert message.
-     */
+    public int getCurrentQuantity() {
+        return currentQuantity;
+    }
+
+    public int getMinimumRequired() {
+        return minimumRequired;
+    }
+
     @Override
     public String toString() {
-        return "Low stock alert for " + ingredientName;
+        return "LowStockAlert: " + ingredientName +
+                " is below minimum. Current: " + currentQuantity +
+                ", Minimum: " + minimumRequired;
     }
 }

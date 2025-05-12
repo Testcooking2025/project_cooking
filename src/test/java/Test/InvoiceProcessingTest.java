@@ -8,7 +8,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InvoiceProcessing {
+public class InvoiceProcessingTest {
 
     private final InvoiceManager invoiceManager = new InvoiceManager();
     private List<String> unpaidCustomers;
@@ -28,7 +28,7 @@ public class InvoiceProcessing {
         assertEquals(status, latestInvoice.getStatus());
     }
 
-    // Scenario 2: Pay invoice
+    // Scenario 2: Customer pays the invoice
     @Given("an invoice for {string} with amount {double} and status {string}")
     public void createInvoiceForCustomer(String customer, double amount, String status) {
         invoiceManager.createInvoice(customer, amount);
@@ -47,7 +47,7 @@ public class InvoiceProcessing {
         assertEquals(expectedStatus, invoice.getStatus(), "Invoice status mismatch");
     }
 
-    // Scenario 3: List unpaid invoices
+    // Scenario 3: System lists unpaid invoices
     @Given("the following invoices exist:")
     public void theFollowingInvoicesExist(io.cucumber.datatable.DataTable table) {
         for (Map<String, String> row : table.asMaps()) {
@@ -67,7 +67,10 @@ public class InvoiceProcessing {
 
     @Then("it should show the following customers:")
     public void itShouldShowTheFollowingCustomers(io.cucumber.datatable.DataTable dataTable) {
-        List<String> expected = dataTable.asList();
-        assertEquals(expected, unpaidCustomers, "Mismatch in unpaid invoice customer list.");
+        List<String> expected = new ArrayList<>(dataTable.asList());
+        List<String> actual = new ArrayList<>(unpaidCustomers);
+        Collections.sort(expected);
+        Collections.sort(actual);
+        assertEquals(expected, actual, "Mismatch in unpaid invoice customer list (ignoring order).");
     }
 }

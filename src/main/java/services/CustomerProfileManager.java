@@ -5,103 +5,90 @@ import models.CustomerProfile;
 import java.util.*;
 
 /**
- * Service responsible for managing customer profiles,
- * including dietary preferences, allergies, and meal filtering.
+ * Manages customer profiles including dietary preferences and allergies.
  */
 public class CustomerProfileManager {
 
-    private final Map<String, CustomerProfile> profiles = new HashMap<>();
-
-    private final List<String> mealOptions = Arrays.asList(
-            "Vegan Salad",
-            "Beef Burger",
-            "Peanut Curry"
-    );
+    private final Map<String, CustomerProfile> customerProfiles = new HashMap<>();
 
     /**
-     * Creates a new customer profile if one does not already exist.
+     * Adds an existing customer profile.
      *
-     * @param name The name of the customer.
+     * @param profile The profile to add.
+     */
+    public void addProfile(CustomerProfile profile) {
+        customerProfiles.put(profile.getName(), profile);
+    }
+
+    /**
+     * Creates a new empty profile for a customer if it doesn't exist.
+     *
+     * @param name Customer name.
      */
     public void createCustomer(String name) {
-        profiles.putIfAbsent(name, new CustomerProfile(name));
+        if (!customerProfiles.containsKey(name)) {
+            customerProfiles.put(name, new CustomerProfile(name));
+        }
     }
 
     /**
-     * Adds a dietary preference to the specified customer's profile.
-     *
-     * @param name       The name of the customer.
-     * @param preference The dietary preference (e.g., "Vegan").
+     * Adds a dietary preference to a profile.
      */
-    public void addDietaryPreference(String name, String preference) {
-        createCustomer(name);
-        profiles.get(name).addDietaryPreference(preference);
+    public void addDietaryPreference(String customerName, String preference) {
+        CustomerProfile profile = customerProfiles.getOrDefault(customerName, new CustomerProfile(customerName));
+        profile.addDietaryPreference(preference);
+        customerProfiles.put(customerName, profile);
     }
 
     /**
-     * Adds an allergy to the specified customer's profile.
-     *
-     * @param name    The name of the customer.
-     * @param allergy The allergy to be added (e.g., "Peanuts").
+     * Alias for addDietaryPreference (used in some test cases).
      */
-    public void addAllergy(String name, String allergy) {
-        createCustomer(name);
-        profiles.get(name).addAllergy(allergy);
+    public void storeDietaryPreference(String customerName, String preference) {
+        addDietaryPreference(customerName, preference);
     }
 
     /**
-     * Retrieves the profile associated with the given customer name.
-     *
-     * @param name The name of the customer.
-     * @return The CustomerProfile object, or null if not found.
+     * Adds an allergy to a profile.
+     */
+    public void addAllergy(String customerName, String allergy) {
+        CustomerProfile profile = customerProfiles.getOrDefault(customerName, new CustomerProfile(customerName));
+        profile.addAllergy(allergy);
+        customerProfiles.put(customerName, profile);
+    }
+
+    /**
+     * Alias for addAllergy (used in some test cases).
+     */
+    public void storeAllergy(String customerName, String allergy) {
+        addAllergy(customerName, allergy);
+    }
+
+    /**
+     * Gets the full profile for a customer.
      */
     public CustomerProfile getProfile(String name) {
-        return profiles.get(name);
+        return customerProfiles.get(name);
     }
 
     /**
-     * Filters available meals based on the customer's dietary preferences and allergies.
-     *
-     * @param name The name of the customer.
-     * @return A list of meals that match preferences and avoid allergens.
+     * Filters available meals based on customer preferences.
      */
-    public List<String> getFilteredMeals(String name) {
-        CustomerProfile profile = profiles.get(name);
-        if (profile == null) return new ArrayList<>();
+    public List<String> getFilteredMeals(String customerName) {
+        CustomerProfile profile = customerProfiles.get(customerName);
+        if (profile == null) return Collections.emptyList();
 
+        List<String> allMeals = List.of("Vegan Salad", "Grilled Chicken", "Nut-Free Curry");
         List<String> result = new ArrayList<>();
 
-        for (String meal : mealOptions) {
-            boolean matchesPreference = profile.getDietaryPreferences().stream()
+        for (String meal : allMeals) {
+            boolean matchesDiet = profile.getDietaryPreferences().stream()
                     .anyMatch(pref -> meal.toLowerCase().contains(pref.toLowerCase()));
+            boolean containsAllergy = profile.getAllergies().stream()
+                    .anyMatch(allergy -> meal.toLowerCase().contains(allergy.toLowerCase()));
 
-            boolean containsAllergen = profile.getAllergies().stream()
-                    .anyMatch(allergen -> meal.toLowerCase().contains(allergen.toLowerCase()));
-
-            if (matchesPreference && !containsAllergen) {
+            if (matchesDiet && !containsAllergy) {
                 result.add(meal);
             }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the customer's dietary preference and allergy (if present) as a map.
-     * Only the first preference and allergy are included.
-     *
-     * @param name The name of the customer.
-     * @return A map containing "diet" and/or "allergy" keys.
-     */
-    public Map<String, String> getOrderPreferences(String name) {
-        CustomerProfile profile = profiles.get(name);
-        if (profile == null) return Collections.emptyMap();
-
-        Map<String, String> result = new HashMap<>();
-        if (!profile.getDietaryPreferences().isEmpty()) {
-            result.put("diet", profile.getDietaryPreferences().get(0));
-        }
-        if (!profile.getAllergies().isEmpty()) {
-            result.put("allergy", profile.getAllergies().get(0));
         }
 
         return result;

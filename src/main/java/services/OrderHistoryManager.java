@@ -5,66 +5,53 @@ import models.OrderHistory;
 import java.util.*;
 
 /**
- * Service for managing customer order history.
- * Provides functionality to record orders, retrieve history,
- * suggest meal plans, and compute order statistics.
+ * Manages order history for customers and supports tracking and analysis.
  */
 public class OrderHistoryManager {
 
     private final Map<String, OrderHistory> historyMap = new HashMap<>();
 
     /**
-     * Records a single meal order for a specific customer.
+     * Adds an order (meal) to a customer's history.
      *
-     * @param customer The name of the customer.
-     * @param meal     The name of the meal ordered.
+     * @param customer Name of the customer.
+     * @param meal     Name of the ordered meal.
      */
-    public void recordOrder(String customer, String meal) {
-        historyMap.computeIfAbsent(customer, OrderHistory::new).addOrder(meal);
+    public void addOrder(String customer, String meal) {
+        OrderHistory history = historyMap.getOrDefault(customer, new OrderHistory(customer));
+        history.addMeal(meal);
+        historyMap.put(customer, history);
     }
 
     /**
-     * Records multiple meal orders for a customer in bulk.
+     * Retrieves the order history for a customer.
      *
-     * @param customer The name of the customer.
-     * @param meals    A list of meal names ordered.
+     * @param customer Name of the customer.
+     * @return List of meals (can be empty).
      */
-    public void recordBulkOrders(String customer, List<String> meals) {
-        historyMap.putIfAbsent(customer, new OrderHistory(customer));
-        meals.forEach(meal -> historyMap.get(customer).addOrder(meal));
+    public List<String> getOrderHistory(String customer) {
+        return historyMap.containsKey(customer)
+                ? historyMap.get(customer).getMeals()
+                : Collections.emptyList();
     }
 
     /**
-     * Retrieves the list of past meals ordered by the specified customer.
+     * Retrieves a map of customer names to their total number of orders.
      *
-     * @param customer The name of the customer.
-     * @return A list of past meals ordered.
-     */
-    public List<String> getPastOrders(String customer) {
-        return historyMap.getOrDefault(customer, new OrderHistory(customer)).getPastOrders();
-    }
-
-    /**
-     * Suggests a meal plan based on a customer's past orders.
-     * Currently, returns the same meals from the customer's order history.
-     *
-     * @param customer The name of the customer.
-     * @return A list of suggested meals.
-     */
-    public List<String> suggestMealPlan(String customer) {
-        return getPastOrders(customer);
-    }
-
-    /**
-     * Calculates the total number of orders per customer.
-     *
-     * @return A map of customer names to their respective number of orders.
+     * @return Map of customer to order count.
      */
     public Map<String, Integer> getOrderStatistics() {
         Map<String, Integer> stats = new HashMap<>();
-        for (OrderHistory history : historyMap.values()) {
-            stats.put(history.getCustomerName(), history.getOrderCount());
+        for (Map.Entry<String, OrderHistory> entry : historyMap.entrySet()) {
+            stats.put(entry.getKey(), entry.getValue().getOrderCount());
         }
         return stats;
+    }
+
+    /**
+     * Clears all order history (used in testing).
+     */
+    public void clear() {
+        historyMap.clear();
     }
 }

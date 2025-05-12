@@ -1,7 +1,8 @@
 package controllers;
 
+import models.CustomMealRequest;
 import services.*;
-import views.ConsoleView;
+import views.*;
 
 import java.util.*;
 
@@ -17,9 +18,13 @@ public class AppController {
     private final OrderHistoryManager orderHistoryManager = new OrderHistoryManager();
     private final SupplierNotificationService supplierNotificationService = new SupplierNotificationService();
     private final AIRecipeRecommendation aiRecipeRecommendation = new AIRecipeRecommendation();
-    private final ConsoleView console = new ConsoleView();
 
-    // Initialize demo data for testing purposes
+    private final ConsoleView console = new ConsoleView();
+    private final InvoiceView invoiceView = new InvoiceView();
+    private final MealOptionsView mealOptionsView = new MealOptionsView();
+    private final TaskBoardView taskBoardView = new TaskBoardView();
+    private final InventoryView inventoryView = new InventoryView();
+
     public void setupDemoData() {
         customerProfileManager.createCustomer("Ali");
         customerProfileManager.addDietaryPreference("Ali", "Vegan");
@@ -28,46 +33,72 @@ public class AppController {
         invoiceManager.createInvoice("Ali", 30.0);
 
         Map<String, Integer> stock = Map.of("Chicken", 2, "Rice", 10);
-        inventoryManager.loadInventory(stock);
-
-        List<Map<String, String>> invData = new ArrayList<>();
-        invData.add(Map.of("Ingredient", "Chicken", "Quantity", "2", "Minimum", "5"));
-        inventoryAlertService.scanForLowInventory(invData);
-
-        orderHistoryManager.recordOrder("Ali", "Vegan Salad");
-        orderHistoryManager.recordOrder("Ali", "Vegan Burger");
+        stock.forEach((k, v) -> inventoryManager.addIngredient(k, v));
 
         kitchenTaskManager.createTask("Prepare Salad", "Ali");
 
+        orderHistoryManager.addOrder("Ali", "Vegan Salad");
+        orderHistoryManager.addOrder("Ali", "Vegan Burger");
+
         supplierNotificationService.requestManualRestock("Onion");
+        inventoryAlertService.scanInventory();
     }
 
-    // Display demo output (for testing purposes)
     public void displayDemoOutput() {
+        console.separator();
         console.showList("Filtered Meals for Ali", customerProfileManager.getFilteredMeals("Ali"));
 
         console.separator();
-        console.showMessage("Invoices:");
-        invoiceManager.getAllInvoices().forEach(inv ->
-                console.showInvoice(inv.getCustomer(), inv.getAmount(), inv.getStatus()));
+        invoiceView.displayInvoices(invoiceManager.getAllInvoices());
 
         console.separator();
-        console.showMap("Inventory Snapshot", inventoryManager.getInventorySnapshot());
+        inventoryView.displayInventory(new ArrayList<>(inventoryManager.getInventorySnapshot().values()));
 
         console.separator();
-        console.showMessage("Kitchen Tasks:");
-        kitchenTaskManager.getAllTasks().forEach(task ->
-                console.showMessage("Task: " + task.getName() + " | Assigned to: " + task.getAssignedStaff() + " | Status: " + task.getStatus()));
+        taskBoardView.displayTasks(kitchenTaskManager.getAllTasks());
 
         console.separator();
         console.showMap("Order Statistics", orderHistoryManager.getOrderStatistics());
 
         console.separator();
-        boolean sent = supplierNotificationService.wasManualRequestSent("Onion");
+        boolean sent = supplierNotificationService.getManualRequestIngredients().contains("Onion");
         console.showMessage("Manual restock request for Onion sent? " + (sent ? "Yes" : "No"));
     }
 
-    // Getter methods for services used in Main
+    public void displayAllInvoices() {
+        invoiceView.displayInvoices(invoiceManager.getAllInvoices());
+    }
+
+    public void submitMealRequest(String[] ingredients) {
+        CustomMealRequest request = new CustomMealRequest();
+
+
+        request.setAvailableIngredients(inventoryManager.getInventorySnapshot().keySet());
+        request.setIncompatibilityRules(mealRequestManager.getAllIncompatibilityRules());
+
+        for (String ing : ingredients) {
+            request.addIngredient(ing.trim());
+        }
+
+        request.validate();
+        if (request.isAccepted()) {
+            mealRequestManager.submitRequest(request);
+            console.showMessage("Meal request accepted.");
+        } else {
+            console.showMessage("Meal request rejected. Reasons:");
+            request.getValidationMessages().forEach(console::showMessage);
+        }
+    }
+
+    public void displayAllKitchenTasks() {
+        taskBoardView.displayTasks(kitchenTaskManager.getAllTasks());
+    }
+
+    public void displayInventoryStatus() {
+        inventoryView.displayInventory(new ArrayList<>(inventoryManager.getInventorySnapshot().values()));
+    }
+
+    // Getters
     public CustomerProfileManager getCustomerProfileManager() { return customerProfileManager; }
     public InvoiceManager getInvoiceManager() { return invoiceManager; }
     public InventoryManager getInventoryManager() { return inventoryManager; }

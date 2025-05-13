@@ -1,13 +1,16 @@
 package Test;
 
 import io.cucumber.java.en.Then;
+import org.junit.jupiter.api.Test;
 import views.ConsoleView;
+import controllers.AppController;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class ConsoleViewTest {
 
@@ -32,7 +35,7 @@ public class ConsoleViewTest {
         console.showList(title, items);
 
         List<String> expected = new ArrayList<>();
-        expected.add(""); // للسطر الفارغ الأول
+        expected.add(""); 
         expected.add(title);
         for (String item : items) {
             expected.add("- " + item);
@@ -64,5 +67,49 @@ public class ConsoleViewTest {
         console.separator();
         assertTrue(outContent.toString().contains("----------------------------------------"));
         outContent.reset();
+    }
+
+    @Test
+    public void testRunWithoutControllerPrintsError() {
+        ConsoleView view = new ConsoleView(); // controller = null
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        view.run();
+
+        assertTrue(errContent.toString().contains("ConsoleView: No controller assigned. Exiting."));
+        System.setErr(System.err); // restore
+    }
+
+    @Test
+    public void testShowMenuDisplaysOptions() {
+        ConsoleView view = new ConsoleView();
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        view.showMenu();
+
+        String output = outContent.toString();
+        assertTrue(output.contains("===== Special Cook Console Menu ====="));
+        assertTrue(output.contains("1. View invoices"));
+        assertTrue(output.contains("2. Submit custom meal request"));
+        assertTrue(output.contains("3. View kitchen tasks"));
+        assertTrue(output.contains("4. View inventory"));
+        assertTrue(output.contains("5. Exit"));
+        assertTrue(output.contains("Enter your choice:"));
+
+        System.setOut(System.out); // restore
+    }
+
+    @Test
+    public void testHandleMealRequest() {
+        String input = "Rice,Onion\n";
+        System.setIn(new java.io.ByteArrayInputStream(input.getBytes()));
+
+        AppController mockController = mock(AppController.class);
+        ConsoleView view = new ConsoleView(mockController);
+        view.handleMealRequest();
+
+        verify(mockController).submitMealRequest(new String[]{"Rice", "Onion"});
     }
 }

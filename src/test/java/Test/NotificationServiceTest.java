@@ -42,7 +42,10 @@ public class NotificationServiceTest {
 
     @Then("an error message should be logged")
     public void errorMessageShouldBeLogged() {
-        System.setErr(originalErr);
-        assertTrue(errContent.toString().contains("Failed to send email"), "Expected error not logged.");
+        String errorOutput = errContent.toString();
+        assertTrue(errorOutput.contains("Failed to send email"), "Expected error not logged.");
+        System.setErr(originalErr);  // Restore stderr
+        errContent.reset();          // Clean for next test
     }
+
 }

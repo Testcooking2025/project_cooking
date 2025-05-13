@@ -1,5 +1,6 @@
 package Test;
 
+import io.cucumber.java.Before;
 import io.cucumber.java.en.*;
 import models.Invoice;
 import views.InvoiceView;
@@ -17,8 +18,8 @@ public class InvoiceViewTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
-    public InvoiceViewTest() {
-
+    @Before
+    public void setupOutputStream() {
         System.setOut(new PrintStream(outContent));
     }
 

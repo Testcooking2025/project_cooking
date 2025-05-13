@@ -1,0 +1,26 @@
+package Test;
+
+import models.LowStockAlert;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class LowStockAlertTest {
+
+    @Test
+    public void testGettersAndToString() {
+        LowStockAlert alert = new LowStockAlert("Flour", 3, 10);
+
+
+        assertEquals("Flour", alert.getIngredientName());
+        assertEquals(3, alert.getCurrentQuantity());
+        assertEquals(10, alert.getMinimumRequired());
+
+
+        String result = alert.toString();
+        assertTrue(result.contains("Flour"));
+        assertTrue(result.contains("3"));
+        assertTrue(result.contains("10"));
+        assertTrue(result.contains("LowStockAlert"));
+    }
+}

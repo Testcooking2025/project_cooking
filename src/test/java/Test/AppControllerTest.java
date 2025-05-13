@@ -2,11 +2,17 @@ package Test;
 
 import controllers.AppController;
 import io.cucumber.java.en.*;
+import org.junit.jupiter.api.Test;
+
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AppControllerTest {
 
     private final AppController controller = new AppController();
+
+    // ----------- CUCUMBER SCENARIOS -----------
 
     @Given("the available inventory is:")
     public void loadInventory(io.cucumber.datatable.DataTable table) {
@@ -32,7 +38,7 @@ public class AppControllerTest {
 
     @Then("the system should accept the request")
     public void requestAccepted() {
-        assert controller.getMealRequestManager().getAllRequests().size() == 1;
+        assertEquals(1, controller.getMealRequestManager().getAllRequests().size());
     }
 
     @Given("the following tasks are loaded:")
@@ -46,8 +52,66 @@ public class AppControllerTest {
     public void viewTasks() {
         controller.displayAllKitchenTasks();
     }
+
     @Then("the system should display the kitchen task board")
     public void theSystemShouldDisplayTheKitchenTaskBoard() {
         controller.displayAllKitchenTasks();
+    }
+
+    @Given("demo data is initialized and displayed")
+    public void demoDataIsInitializedAndDisplayed() {
+        controller.setupDemoData();
+        controller.displayDemoOutput();
+    }
+
+    @Then("the system displays all invoices and inventory")
+    public void displayInvoicesAndInventory() {
+        controller.displayAllInvoices();
+        controller.displayInventoryStatus();
+    }
+
+    @Then("all managers in AppController should be initialized")
+    public void testAllGetters() {
+        assertNotNull(controller.getCustomerProfileManager());
+        assertNotNull(controller.getInvoiceManager());
+        assertNotNull(controller.getOrderHistoryManager());
+        assertNotNull(controller.getSupplierNotificationService());
+        assertNotNull(controller.getAiRecipeRecommendation());
+        assertNotNull(controller.getInventoryManager());
+        assertNotNull(controller.getKitchenTaskManager());
+        assertNotNull(controller.getMealRequestManager());
+    }
+
+    // ----------- DIRECT JUNIT TESTS (Fallback) -----------
+
+    @Test
+    public void testSubmitMealRequestDirectly() {
+        String[] ingredients = {"Rice", "Onion"};
+        controller.submitMealRequest(ingredients);
+    }
+
+    @Test
+    public void testSetupAndDisplay() {
+        controller.setupDemoData();
+        controller.displayDemoOutput();
+    }
+
+    @Test
+    public void testDisplayViewsManually() {
+        controller.displayAllInvoices();
+        controller.displayInventoryStatus();
+        controller.displayAllKitchenTasks();
+    }
+
+    @Test
+    public void testAllGettersDirectly() {
+        assertNotNull(controller.getCustomerProfileManager());
+        assertNotNull(controller.getInvoiceManager());
+        assertNotNull(controller.getInventoryManager());
+        assertNotNull(controller.getKitchenTaskManager());
+        assertNotNull(controller.getMealRequestManager());
+        assertNotNull(controller.getOrderHistoryManager());
+        assertNotNull(controller.getSupplierNotificationService());
+        assertNotNull(controller.getAiRecipeRecommendation());
     }
 }

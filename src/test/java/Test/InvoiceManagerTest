@@ -1,0 +1,67 @@
+package Test;
+
+import models.Invoice;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import services.InvoiceManager;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class InvoiceManagerTest {
+
+    private InvoiceManager manager;
+
+    @BeforeEach
+    public void setup() {
+        manager = new InvoiceManager();
+        manager.createInvoice("Ali", 30.0);
+        manager.createInvoice("Sara", 20.0);
+        manager.updateInvoiceStatus("Ali", "Paid");
+    }
+
+    @Test
+    public void testGetFinancialSummary() {
+        Map<String, Object> summary = manager.getFinancialSummary();
+
+        assertEquals(2, summary.get("totalInvoices"));
+        assertEquals(1, summary.get("paidInvoices"));
+        assertEquals(1, summary.get("unpaidInvoices"));
+        assertEquals(50.0, (Double) summary.get("totalAmount"), 0.01);
+    }
+
+    @Test
+    public void testGetAllInvoicesReturnsList() {
+        List<Invoice> list = manager.getAllInvoices();
+        assertEquals(2, list.size());
+    }
+
+    @Test
+    public void testUpdateInvoiceStatusWhenInvoiceNotFound() {
+        // No invoice named "Unknown" exists
+        manager.updateInvoiceStatus("Unknown", "Paid");
+        assertNull(manager.getInvoiceByCustomer("Unknown"));
+    }
+
+    @Test
+    public void testMarkAsPaidChangesStatus() {
+        manager.markAsPaid("Sara");
+        assertEquals("Paid", manager.getInvoiceByCustomer("Sara").getStatus());
+    }
+
+    @Test
+    public void testGetUnpaidCustomerNames() {
+        List<String> unpaid = manager.getUnpaidCustomerNames();
+        assertEquals(1, unpaid.size());
+        assertTrue(unpaid.contains("Sara"));
+    }
+
+    @Test
+    public void testGetInvoiceByCustomer() {
+        Invoice invoice = manager.getInvoiceByCustomer("Ali");
+        assertNotNull(invoice);
+        assertEquals(30.0, invoice.getAmount(), 0.01);
+    }
+}

@@ -1,0 +1,30 @@
+package Test;
+
+import models.InventoryItem;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class InventoryItemTest {
+
+    @Test
+    public void testRestock() {
+        InventoryItem item = new InventoryItem("Rice", 5);
+        item.restock(10);
+        assertEquals(15, item.getQuantity());
+    }
+
+    @Test
+    public void testDeductNeverGoesBelowZero() {
+        InventoryItem item = new InventoryItem("Flour", 3);
+        item.deduct(10);
+        assertEquals(0, item.getQuantity());
+    }
+
+    @Test
+    public void testGetters() {
+        InventoryItem item = new InventoryItem("Salt", 7);
+        assertEquals("Salt", item.getName());
+        assertEquals(7, item.getQuantity());
+    }
+}

@@ -1,0 +1,25 @@
+package Test;
+
+import models.SubstitutionRecord;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class SubstitutionRecordTest {
+
+    @Test
+    public void testSubstitutionRecordGettersAndToString() {
+        SubstitutionRecord record = new SubstitutionRecord("Salt", "Sugar");
+
+
+        assertEquals("Salt", record.getIngredientReplaced());
+        assertEquals("Sugar", record.getIngredientUsed());
+        assertNotNull(record.getTimestamp());
+
+
+        String output = record.toString();
+        assertTrue(output.contains("Salt"));
+        assertTrue(output.contains("Sugar"));
+        assertTrue(output.contains("Substitution"));
+    }
+}

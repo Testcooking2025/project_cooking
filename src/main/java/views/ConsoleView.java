@@ -11,12 +11,12 @@ public class ConsoleView {
     private final Scanner scanner = new Scanner(System.in);
     private AppController controller;
 
-    // ✅ Constructor بدون controller (للاختبار أو تحميل لاحق)
+
     public ConsoleView() {
         // Empty
     }
 
-    // ✅ Constructor مع controller (للاستخدام الفعلي)
+
     public ConsoleView(AppController controller) {
         this.controller = controller;
     }
@@ -45,7 +45,7 @@ public class ConsoleView {
         showMessage("Thank you. Exiting system.");
     }
 
-    private void showMenu() {
+    public void showMenu() {
         separator();
         System.out.println("===== Special Cook Console Menu =====");
         System.out.println("1. View invoices");
@@ -56,7 +56,7 @@ public class ConsoleView {
         System.out.print("Enter your choice: ");
     }
 
-    private void handleMealRequest() {
+    public void handleMealRequest() {
         showMessage("Enter ingredients (comma-separated):");
         String[] ingredients = scanner.nextLine().split(",");
         controller.submitMealRequest(ingredients);

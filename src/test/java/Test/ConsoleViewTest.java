@@ -139,4 +139,22 @@ public class ConsoleViewTest {
         assertTrue(err.toString().contains("ConsoleView: No controller assigned. Exiting."));
         System.setErr(System.err);
     }
+
+    @Test
+    public void testRunCoversAllMenuChoices() {
+        // Fake input sequence to cover all menu choices: 1, 2, 3, 4, 5 (exit)
+        String input = "1\n2\n3\n4\n5\n";
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+
+        // Dummy AppController (minimal override only)
+        AppController dummyController = new AppController() {
+            @Override
+            public void submitMealRequest(String[] ingredients) {
+                // dummy
+            }
+        };
+
+        ConsoleView view = new ConsoleView(dummyController);
+        view.run();  // will loop and exit after "5"
+    }
 }

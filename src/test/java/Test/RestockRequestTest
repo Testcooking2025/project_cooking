@@ -1,0 +1,23 @@
+package Test;
+
+import models.RestockRequest;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class RestockRequestTest {
+
+    @Test
+    public void testGettersAndToString() {
+        RestockRequest request = new RestockRequest("Onion");
+
+
+        assertEquals("Onion", request.getIngredient());
+        assertNotNull(request.getRequestTime());
+
+
+        String output = request.toString();
+        assertTrue(output.contains("Onion"));
+        assertTrue(output.contains("Restock requested for"));
+    }
+}

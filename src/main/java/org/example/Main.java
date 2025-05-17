@@ -16,6 +16,9 @@ public class Main {
     private static final AppController controller = new AppController();
     private static final NotificationService emailService = new NotificationService();
 
+    //  Constant to avoid duplication
+    private static final String CHOICE_PROMPT = "Choice: ";
+
     public static void main(String[] args) {
         console.showMessage("=== Welcome to Special Cook Console System ===\n");
         controller.setupDemoData();
@@ -93,13 +96,14 @@ public class Main {
                     return;
                 }
             }
+
             console.separator();
         }
     }
 
     private static void handleUserActions(User user) {
         console.showMessage("1) View filtered meals\n2) View invoices\n3) Generate new invoice\n0) Logout");
-        System.out.print("Choice: ");
+        System.out.print(CHOICE_PROMPT);
         String input = scanner.nextLine();
 
         switch (input) {
@@ -123,7 +127,7 @@ public class Main {
 
     private static void handleChefActions() {
         console.showMessage("1) View tasks\n2) View inventory snapshot\n0) Logout");
-        System.out.print("Choice: ");
+        System.out.print(CHOICE_PROMPT);
         String input = scanner.nextLine();
 
         switch (input) {
@@ -143,7 +147,7 @@ public class Main {
 
     private static void handleAdminActions() {
         console.showMessage("1) View order statistics\n2) View restock alerts\n3) Send restock alert email\n4) View all invoices\n5) View financial summary\n0) Logout");
-        System.out.print("Choice: ");
+        System.out.print(CHOICE_PROMPT);
         String input = scanner.nextLine();
 
         switch (input) {

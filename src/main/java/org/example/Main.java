@@ -16,8 +16,9 @@ public class Main {
     private static final AppController controller = new AppController();
     private static final NotificationService emailService = new NotificationService();
 
-    //  Constant to avoid duplication
+    // Constants to remove duplication
     private static final String CHOICE_PROMPT = "Choice: ";
+    private static final String ERROR_INVALID_CHOICE = "Invalid choice.";
 
     public static void main(String[] args) {
         console.showMessage("=== Welcome to Special Cook Console System ===\n");
@@ -121,7 +122,7 @@ public class Main {
                 userService.signOut();
                 return;
             }
-            default -> showError("Invalid choice.");
+            default -> showError(ERROR_INVALID_CHOICE);
         }
     }
 
@@ -141,7 +142,7 @@ public class Main {
                 userService.signOut();
                 return;
             }
-            default -> showError("Invalid choice.");
+            default -> showError(ERROR_INVALID_CHOICE);
         }
     }
 
@@ -175,7 +176,7 @@ public class Main {
                 userService.signOut();
                 return;
             }
-            default -> showError("Invalid choice.");
+            default -> showError(ERROR_INVALID_CHOICE);
         }
     }
 

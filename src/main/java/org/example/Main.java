@@ -16,7 +16,6 @@ public class Main {
     private static final AppController controller = new AppController();
     private static final NotificationService emailService = new NotificationService();
 
-    // Constants to remove duplication
     private static final String CHOICE_PROMPT = "Choice: ";
     private static final String ERROR_INVALID_CHOICE = "Invalid choice.";
 
@@ -88,21 +87,23 @@ public class Main {
             console.separator();
             console.showMessage("=== Main Menu (" + user.getRole().toUpperCase() + ") ===");
 
-            switch (user.getRole().toLowerCase()) {
+            boolean shouldLogout = switch (user.getRole().toLowerCase()) {
                 case "user" -> handleUserActions(user);
                 case "chef" -> handleChefActions();
                 case "admin" -> handleAdminActions();
                 default -> {
                     showError("Unknown role: " + user.getRole());
-                    return;
+                    yield true;
                 }
-            }
+            };
+
+            if (shouldLogout) return;
 
             console.separator();
         }
     }
 
-    private static void handleUserActions(User user) {
+    private static boolean handleUserActions(User user) {
         console.showMessage("1) View filtered meals\n2) View invoices\n3) Generate new invoice\n0) Logout");
         System.out.print(CHOICE_PROMPT);
         String input = scanner.nextLine();
@@ -120,13 +121,15 @@ public class Main {
             }
             case "0" -> {
                 userService.signOut();
-                return;
+                return true;
             }
             default -> showError(ERROR_INVALID_CHOICE);
         }
+
+        return false;
     }
 
-    private static void handleChefActions() {
+    private static boolean handleChefActions() {
         console.showMessage("1) View tasks\n2) View inventory snapshot\n0) Logout");
         System.out.print(CHOICE_PROMPT);
         String input = scanner.nextLine();
@@ -140,13 +143,15 @@ public class Main {
                     controller.getInventoryManager().getInventorySnapshot());
             case "0" -> {
                 userService.signOut();
-                return;
+                return true;
             }
             default -> showError(ERROR_INVALID_CHOICE);
         }
+
+        return false;
     }
 
-    private static void handleAdminActions() {
+    private static boolean handleAdminActions() {
         console.showMessage("1) View order statistics\n2) View restock alerts\n3) Send restock alert email\n4) View all invoices\n5) View financial summary\n0) Logout");
         System.out.print(CHOICE_PROMPT);
         String input = scanner.nextLine();
@@ -174,10 +179,12 @@ public class Main {
             }
             case "0" -> {
                 userService.signOut();
-                return;
+                return true;
             }
             default -> showError(ERROR_INVALID_CHOICE);
         }
+
+        return false;
     }
 
     private static void showError(String msg) {

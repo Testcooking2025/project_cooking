@@ -56,4 +56,14 @@ public class InventoryItem {
     public void restock(int amount) {
         quantity += amount;
     }
+
+    /**
+     * Returns a string representation of the inventory item.
+     *
+     * @return A string like "Chicken: 2"
+     */
+    @Override
+    public String toString() {
+        return name + ": " + quantity;
+    }
 }
